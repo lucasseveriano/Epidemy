@@ -2,6 +2,16 @@
 from Node import Node
 from Node import Neighbor
 
+'''
+μ Taxa de descontaminação (limpeza)
+η Taxa de infecção em função das taxas exógena (λ) e endógena (γ)
+S Estado suscetível
+I Estado infectado
+N Tamanho da população
+λ Taxa de infecção exógena por nó
+γ Taxa de infecção endógena
+'''
+
 class SimulationController:
     NodeList = [] 
     PortInput = 5000
