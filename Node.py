@@ -42,21 +42,17 @@ class Node:
         #Create socket
         
         # Initialize Threads 
-        # Exogenoust infection
-        infectThread = threading.Thread(target=self.InfectExogenoustTread, args=(1,))
-        infectThread.start()
+        # Endogenous infection
+        infectEndogenousThread = threading.Thread(target=self.InfectEndogenousThread, args=(1,))
+        infectEndogenousThread.start()
 
         # Healing Thread
         healingThread = threading.Thread(target=self.HealingThread, args=(0.5,))
         healingThread.start()   
 
-         # Exogenoust infection
-        infectEndogenousThread = threading.Thread(target=self.InfectEndogenoustTread, args=(1,))
-        infectEndogenousThread.start()
-
         # Exogenoust infection
-        infectEndogenousThread = threading.Thread(target=self.InfectExogenoustTread)
-        infectEndogenousThread.start()          
+        infectThread = threading.Thread(target=self.InfectExogenoustTread, args=(1,))
+        infectThread.start()     
 
         # Receive infection from neighbor
         receiveThread = threading.Thread(target=self.ReceiveInfectionFromNeighborTread)
@@ -69,10 +65,17 @@ class Node:
         infectEndogenousThread.join()
         receiveThread.join()
 
+    # Endogenous infection
+    def InfectEndogenousThread(self, rate):
+        while True:
+            self.wait(rate)
+            print("Send infection Endogenous", rate)    
+
     def InfectExogenoustTread(self, rate):
         while True:
             self.wait(rate)
-            print("Send infection Exogenous", rate)
+            self.CurrenState = State.Infected 
+            print("Get exogenous infected")
         
     # Healing rate
     def HealingThread(self, rate):
@@ -82,12 +85,7 @@ class Node:
                 self.CurrenState = State.Susceptible
                 print("Healed", rate)
     
-    # Endogenous infection
-    def InfectEndogenoustTread(self, rate):
-        while True:
-            self.wait(rate)
-            self.CurrenState = State.Infected 
-            print("Get endogenous infected")
+        
     
     # Listen network to receive infection from network
     def ReceiveInfectionFromNeighborTread(self):
