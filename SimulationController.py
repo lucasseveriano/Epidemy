@@ -1,6 +1,5 @@
 # Import necessary Libraries
-from Node import Node
-from Node import Neighbor
+from Node import *
 
 '''
 μ Taxa de descontaminação (limpeza)
@@ -20,12 +19,17 @@ class SimulationController:
         
     PortListTemp = []
     
-    def __init__(self, numberOfNodes):
+    def __init__(self, numberOfNodes, numberOfinfected = 1):
         print(":: Initialize Simulation ::")
         
-        for i in range(numberOfNodes):        
-            # fazer em loop
-            node = Node(self.Ip, self.PortInput, self.PortOutput)
+        # fazer em loop
+        for i in range(numberOfNodes):
+            if (numberOfinfected > 0):            
+                node = Node(self.Ip, self.PortInput, self.PortOutput, i, State.Infected)
+                numberOfinfected -= 1
+            else:
+                node = Node(self.Ip, self.PortInput, self.PortOutput, i)
+                
             self.PortListTemp.append(self.PortInput)
             self.PortInput += 1
             self.PortOutput += 1
@@ -35,10 +39,10 @@ class SimulationController:
         for nodeItem in self.NodeList:
             for Neighbor in self.NodeList:            
                 if (nodeItem != Neighbor):
-                    nodeItem.Ip = ""
+                    nodeItem.Ip = self.Ip
                     nodeItem.AddNeighbor(Neighbor.Ip, Neighbor.PortInput)                                                 
 
         print("\n")                    
         for node in self.NodeList:
-            node.PrintNeighbor()              
-        
+            node.PrintNeighbor()
+

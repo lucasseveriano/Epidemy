@@ -14,5 +14,5 @@ N Tamanho da população
 if __name__ == '__main__':
     
     # Código principal
-    sc = SimulationController(2)
+    sc = SimulationController(10, 1)
     
