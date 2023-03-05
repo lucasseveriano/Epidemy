@@ -1,6 +1,10 @@
 # Import necessary Libraries
 import numpy
 from enum import Enum
+import threading
+import random
+import time
+import math
 
 # States that indicates that node is infected or susceptible
 class State(Enum):
@@ -20,8 +24,8 @@ class Node:
     PortInput = 0
     PortOutput = 0
     Ip = 0
-    Neighbors = []
-
+    Neighbors = []    
+    
     def __init__(self, ip, portInput, portOutput):
         print("Initialize node")          
         print("IP: " + str(ip))          
@@ -37,20 +41,72 @@ class Node:
         
         #Create socket
         
-        # Initialize Threads            
+        # Initialize Threads 
+        # Exogenoust infection
+        infectThread = threading.Thread(target=self.InfectExogenoustTread, args=(1,))
+        infectThread.start()
+
+        # Healing Thread
+        healingThread = threading.Thread(target=self.HealingThread, args=(0.5,))
+        healingThread.start()   
+
+         # Exogenoust infection
+        infectEndogenousThread = threading.Thread(target=self.InfectEndogenoustTread, args=(1,))
+        infectEndogenousThread.start()
+
+        # Exogenoust infection
+        infectEndogenousThread = threading.Thread(target=self.InfectExogenoustTread)
+        infectEndogenousThread.start()          
+
+        # Receive infection from neighbor
+        receiveThread = threading.Thread(target=self.ReceiveInfectionFromNeighborTread)
+        receiveThread.start()   
+
+        # wait thread to be finished
+        infectThread.join()
+        healingThread.join()
+        infectEndogenousThread.join()
+        infectEndogenousThread.join()
+        receiveThread.join()
+
+    def InfectExogenoustTread(self, rate):
+        while True:
+            self.wait(rate)
+            print("Send infection Exogenous", rate)
         
-                  
-    def AddNeighbor(self, ip, port):        
+    # Healing rate
+    def HealingThread(self, rate):
+        while True:
+            self.wait(rate)
+            if (self.CurrenState == State.Infected):
+                self.CurrenState = State.Susceptible
+                print("Healed", rate)
+    
+    # Endogenous infection
+    def InfectEndogenoustTread(self, rate):
+        while True:
+            self.wait(rate)
+            self.CurrenState = State.Infected 
+            print("Get endogenous infected")
+    
+    # Listen network to receive infection from network
+    def ReceiveInfectionFromNeighborTread(self):
+        while True:
+            print("Receive")
+    
+    def wait(self,param):
+        if not isinstance(param, (int, float)):
+            raise TypeError('lambda_param deve ser um número')
+        waiting = -math.log(random.random()) / param
+        time.sleep(waiting)
+
+    
+    def AddNeighbor(self, ip, port):
         n = Neighbor(ip, port)
         self.Neighbors.append(n)
    
-    def PrintNeighbor(self):    
+    def PrintNeighbor(self):
         print ("Node ", str(self.Ip), str(self.PortInput))
         for neighbor in self.Neighbors:
             print(" " + neighbor.Ip, neighbor.Port)
-        
-   
-
-   
-
 
