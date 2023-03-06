@@ -36,6 +36,7 @@ class Node:
         self.CurrenState = State.Susceptible
         self.Identification = "Node " + str(number)        
         self.CurrenState = currentState
+        self.IsRunning = True
         
         #Create socket
         # Send Infection
@@ -48,32 +49,24 @@ class Node:
         
         # Initialize Threads 
         # Endogenous infection
-        infectEndogenousThread = threading.Thread(target=self.InfectEndogenousThread, args=(1.1,))
-        infectEndogenousThread.start()
+        self.infectEndogenousThread = threading.Thread(target=self.InfectEndogenousThread, args=(1.1,))
+        self.infectEndogenousThread.start()
 
         # Healing Thread
-        healingThread = threading.Thread(target=self.HealingThread, args=(1,))
-        healingThread.start()   
+        self.healingThread = threading.Thread(target=self.HealingThread, args=(0.01,))
+        self.healingThread.start()   
 
         # Exogenoust infection
-        infectThread = threading.Thread(target=self.InfectExogenoustTread, args=(0.00001,))
-        infectThread.start()     
+        self.infectThread = threading.Thread(target=self.InfectExogenoustTread, args=(0.0001,))
+        self.infectThread.start()     
 
         # Receive infection from neighbor
-        receiveThread = threading.Thread(target=self.ReceiveInfectionFromNeighborTread)
-        receiveThread.start()   
-
-        # todo: Create method to finish threads
-        # wait thread to be finished
-        # infectThread.join()
-        # healingThread.join()
-        # infectEndogenousThread.join()
-        # infectEndogenousThread.join()
-        # receiveThread.join()
+        self.receiveThread = threading.Thread(target=self.ReceiveInfectionFromNeighborTread)
+        self.receiveThread.start()   
 
     # Endogenous infection
     def InfectEndogenousThread(self, rate):
-        while True:
+        while self.IsRunning:
             self.wait(rate)            
             # Get any neighbour
             if (self.CurrenState == State.Infected):
@@ -84,13 +77,13 @@ class Node:
                     self.InfectionSocket.sendto(message.encode(), (neighbor.Ip, neighbor.Port))
 
     def InfectExogenoustTread(self, rate):
-        while True:
+        while self.IsRunning:
             self.wait(rate)
             self.CurrenState = State.Infected
 
     # Healing rate
     def HealingThread(self, rate):
-        while True:
+        while self.IsRunning:
             self.wait(rate)
             if (self.CurrenState == State.Infected):
                 self.CurrenState = State.Susceptible
@@ -98,7 +91,7 @@ class Node:
 
     # Listen network to receive infection from network
     def ReceiveInfectionFromNeighborTread(self):
-        while True:
+        while self.IsRunning:
             dados_recebidos, endereco_servidor = self.ReceiveSocket.recvfrom(1024)
             print(self.Identification + " has infected by " + dados_recebidos.decode())
             self.CurrenState = State.Infected
@@ -107,7 +100,9 @@ class Node:
         if not isinstance(param, (int, float)):
             raise TypeError('lambda_param deve ser um número')
         # waiting = -math.log(random.random()) / param
-        waiting = numpy.random.exponential(1/param) 
+        # waiting = numpy.random.exponential(1/param) 
+        u = random.uniform(0, 1) # gerar amostra uniforme
+        waiting = -math.log(u)/param # converter para amostra exponencial
         time.sleep(waiting)
 
     def AddNeighbor(self, ip, port):
@@ -119,3 +114,8 @@ class Node:
         for neighbor in self.Neighbors:
             print(" " + neighbor.Ip, neighbor.Port)
 
+    def FinishThread(self):                
+        self.infectThread.join()
+        self.infectEndogenousThread.join()        
+        self.healingThread.join()
+        self.receiveThread.join()

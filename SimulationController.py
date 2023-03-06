@@ -1,5 +1,6 @@
 # Import necessary Libraries
 from Node import *
+import matplotlib.pyplot as plt
 
 '''
 μ Taxa de descontaminação (limpeza)
@@ -33,7 +34,12 @@ class SimulationController:
             self.PortListTemp.append(self.PortInput)
             self.PortInput += 1
             self.PortOutput += 1
-            self.NodeList.append(node)            
+            self.NodeList.append(node)
+            self.counter = 1
+            
+            self.Infected = []
+            self.susceptible = []
+            self.timer = []
         
         # Initialize list of neighbors of each node in network      
         for nodeItem in self.NodeList:
@@ -45,4 +51,46 @@ class SimulationController:
         print("\n")                    
         for node in self.NodeList:
             node.PrintNeighbor()
+            
+        while True:
+            self.UpdateNetworkState(self.counter)            
+            time.sleep(1)
+            if (self.counter == 10):
+                break
+        
+        #finishThread
+        self.FinishThreads()
+        self.PlotChart()
+        
+    def PlotChart(self):
+        # Plotagem
+        plt.plot(self.timer, self.Infected, label='I')
+        plt.plot(self.timer, self.susceptible, label='S')
+
+        # Configurações de eixo
+        plt.xlabel('Time')
+        plt.ylabel('Population')
+
+        # Título do gráfico
+        plt.title('Gráfico com duas séries')
+
+        # Legenda
+        plt.legend()
+
+        # Exibição do gráfico
+        plt.show()        
+            
+    def UpdateNetworkState(self, counter):     
+        i = sum(map(lambda x : x.CurrenState == State.Infected, self.NodeList))  
+        s = sum(map(lambda x : x.CurrenState == State.Susceptible, self.NodeList))        
+        
+        self.susceptible.append(s)
+        self.Infected.append(i)   
+        self.timer.append(self.counter)
+        
+        self.counter += 1
+        
+    def FinishThreads(self):
+         for node in self.NodeList:
+            node.IsRunning = False
 
